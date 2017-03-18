@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "moduleResolution": "node",
+    "removeComments": true,
+    "noImplicitAny": false,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "newLine": "LF"
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "include" : [
+    "src/**/*.ts"
+  ]
+}

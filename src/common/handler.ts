@@ -1,3 +1,6 @@
-/**
- * Created by zas on 18.03.17.
- */
+
+export interface Handler {
+  name : string;
+  init? : Function;
+  boot? : Function;
+}

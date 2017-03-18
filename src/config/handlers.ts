@@ -1,9 +1,7 @@
 'use strict';
 
-let env = process.env;
-
 const v1 = [];
 
-module.exports = {
+export default {
   v1 : v1,
 };

@@ -1,3 +1,1 @@
-/**
- * Created by zas on 18.03.17.
- */
+export * from "./error-handler.middleware";

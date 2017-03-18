@@ -1,41 +1,17 @@
-'use strict';
 
-const Application = require('application');
+import Application from "./application";
+import errorHandler from "./handlers/error-handler.middleware";
+
+
 const app = new Application();
-const config = require('config');
-
 app.proxy = true;
 
-const handlers = [
-  'helmet',
-  'mongooseHandler',
-  'rabbit',
-  'cors',
-  'requestId',
-  'requestLog',
-  'nocache',
-  'errorHandler',
-  'accessLogger',
-  'verifyCloudPayments',
-  'i18n',
-  'authTokenParser',
-  'validateJSON',
-  'bodyParser',
-  'multipartParser',
-  'verboseLogger',
-  'rbac',
-  'reqLogger',
-  'auth',
-  'lastActivityHandler',
-  'resolveResponseBody',
+let handlers = [
+  errorHandler
 ];
 
-handlers.concat(config.handlers.v1);
-
-for (let handler of handlers) {
-  app.requireHandler(handler);
+for(let handler of handlers) {
+  app.initHandler(handler);
 }
 
-app.requireHandler('404');
-
-module.exports = app;
+export {app};

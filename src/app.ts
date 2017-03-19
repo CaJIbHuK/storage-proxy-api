@@ -1,17 +1,8 @@
 
 import Application from "./application";
-import errorHandler from "./handlers/error-handler.middleware";
-
+import * as handlers from "./handlers";
 
 const app = new Application();
 app.proxy = true;
-
-let handlers = [
-  errorHandler
-];
-
-for(let handler of handlers) {
-  app.initHandler(handler);
-}
-
+Object.keys(handlers).forEach(handler => app.initHandler(handlers[handler]));
 export {app};

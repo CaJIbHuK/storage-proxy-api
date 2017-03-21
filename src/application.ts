@@ -1,7 +1,7 @@
 'use strict';
 
 import * as Koa from "koa";
-import Logger from "./common/logger";
+import {Logger} from "./common/logger";
 import {Handler} from "./common/handler";
 
 export default class Application extends Koa {
@@ -11,11 +11,12 @@ export default class Application extends Koa {
 
   constructor() {
     super();
-    this.handlers = {};
+    this.handlers = [];
     this.log = Logger.getLogger('Boot');
   }
 
   initHandler(handler : Handler) {
+    this.handlers.push(handler);
     if (handler.init) {
       this.log.silly(`init -> ${handler.name}`);
       handler.init(this);
@@ -24,14 +25,11 @@ export default class Application extends Koa {
   }
 
   async waitBoot() {
-    for (let path in this.handlers) {
-      if (this.handlers.hasOwnProperty(path)) {
-        let handler = this.handlers[path];
-        if (!handler.boot) continue;
-        this.log.silly('-> ' + path);
-        await handler.boot();
-        this.log.silly('<- ' + path);
-      }
+    for (let handler of this.handlers) {
+      if (!handler.boot) continue;
+      this.log.silly(`boot -> ${handler.name}`);
+      await handler.boot();
+      this.log.silly(`boot <- ${handler.name}`);
     }
   }
 

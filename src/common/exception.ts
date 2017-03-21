@@ -1,5 +1,5 @@
 
-export default class Exception extends Error {
+export class Exception extends Error {
   private _statusCode: number;
 
   constructor(statusCode: number, message: string) {

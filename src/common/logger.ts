@@ -1,7 +1,7 @@
 import * as winston from "winston";
 import * as uuid from "uuid";
 
-export default class Logger extends winston.Logger {
+export class Logger extends winston.Logger {
 
   private id : string;
 

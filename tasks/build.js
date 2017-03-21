@@ -1,5 +1,6 @@
 const gulp = require('gulp');
 const ts = require('gulp-typescript');
+const tsc = require('gulp-tsc');
 const debug = require('gulp-debug');
 module.exports = function ({src, dist}) {
   return gulp.src(src)

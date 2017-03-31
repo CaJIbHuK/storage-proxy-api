@@ -1,5 +1,5 @@
 import * as Koa from "koa"
-import {Logger} from "../common";
+import {Logger} from "common";
 let log = Logger.getLogger('Request');
 
 export const requestLogger = {

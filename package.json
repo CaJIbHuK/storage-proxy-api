@@ -4,7 +4,7 @@
   "main": "index.js",
   "dependencies": {
     "amqp-as-promised": "^1.0.4",
-    "app-module-path": "^1.0.3",
+    "app-module-path": "^1.1.0",
     "assert": "^1.3.0",
     "assert-plus": "^1.0.0",
     "atob": "^2.0.3",

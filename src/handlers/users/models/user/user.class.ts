@@ -1,4 +1,4 @@
-import {BaseModel, BaseRepo} from "../../../../common";
+import {BaseModel, BaseRepo} from "common";
 import {UserSchemaModel, IUser} from "./user.schema";
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -29,8 +29,8 @@ export class User extends BaseModel<IUser> {
   set salt(salt) {this._doc.salt = salt;};
 
   validatePassword(password) {
-    if (!password) return this._doc.invalidate('password', 'Password is required');
-    if (password.length < MIN_PASSWORD_LENGTH) return this._doc.invalidate('password', 'Password must be at least  ' + MIN_PASSWORD_LENGTH + ' chars long.');
+    if (!password) return this._doc.invalidate('password', 'Password is required', password);
+    if (password.length < MIN_PASSWORD_LENGTH) return this._doc.invalidate('password', 'Password must be at least  ' + MIN_PASSWORD_LENGTH + ' chars long.', password);
     return true;
   }
 

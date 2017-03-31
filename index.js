@@ -1,7 +1,10 @@
 'use strict';
 
-const app = require('./dist/app').app;
-const config = require('./config');
+const loader = require('app-module-path');
+loader.addPath(__dirname + '/dist');
+
+const app = require('app').app;
+const config = require('config').default.app;
 
 async function shutdown() {
   console.log('Closing the app...');

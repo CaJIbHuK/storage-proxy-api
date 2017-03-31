@@ -1,5 +1,5 @@
 import * as mongoose from "mongoose";
-import {SchemaFactory, mongooseDocument} from "../../../../common";
+import {SchemaFactory, mongooseDocument} from "common";
 
 export interface IUser extends mongooseDocument {
   name : String;

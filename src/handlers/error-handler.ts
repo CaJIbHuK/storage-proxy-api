@@ -1,4 +1,4 @@
-import {Exception, Logger} from "../common";
+import {Exception, Logger} from "common";
 import {ValidationError} from "mongoose";
 let log = Logger.getLogger('Exception');
 
@@ -8,7 +8,7 @@ interface ValidationApiError {
 }
 
 function format(mongooseError : any) {
-  let result : ValidationApiError = {};
+  let result : ValidationApiError = {message : "", errors : []};
   result.message = mongooseError.message || 'Validation error';
   if (mongooseError.errors) {
     result.errors = Object.keys(mongooseError.errors).map(field => ({[field] : mongooseError.errors[field].message}));

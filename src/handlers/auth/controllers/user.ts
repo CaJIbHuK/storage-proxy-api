@@ -1,7 +1,7 @@
 import * as Koa from "koa";
-import {JWT} from "../../../lib/jwt";
-import {userRepo, User, UserAuthInfo} from "../../../handlers/users";
-import {AuthLib} from "../../../lib/auth";
+import {JWT} from "lib/jwt";
+import {userRepo, User, UserAuthInfo} from "handlers/users";
+import {AuthLib} from 'lib/auth';
 
 let getToken = async (user : User) => JWT.sign(user.getNewJWTData());
 

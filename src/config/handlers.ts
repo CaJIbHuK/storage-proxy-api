@@ -1,5 +1,3 @@
-'use strict';
-
 const v1 = [];
 
 export default {

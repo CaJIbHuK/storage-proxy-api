@@ -21,6 +21,7 @@ let sHandlers = [
 sHandlers.forEach(handler => app.initHandler(handler));
 
 import * as appHandlers from "./handlers/apps.middleware";
+
 let aHandlers = [
   appHandlers.auth
 ];

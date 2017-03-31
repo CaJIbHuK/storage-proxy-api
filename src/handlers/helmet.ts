@@ -1,4 +1,4 @@
-import koaHelmet = require("koa-helmet");
+const koaHelmet = require("koa-helmet");
 
 export const helmet = {
   name : 'helmet',

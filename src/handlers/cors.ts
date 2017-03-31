@@ -1,4 +1,4 @@
-import koaCors = require("koa2-cors");
+const koaCors = require("koa2-cors");
 
 
 export const cors = {

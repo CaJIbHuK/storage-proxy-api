@@ -1,8 +1,8 @@
 import {router} from "./router";
-import {api_v1} from "handlers/apiRouter";
+import api_v1 from "handlers/apiRouter";
 
 
-export const auth = {
+export default {
   name : 'auth',
   init : (app) => api_v1.mount('/auth', router)
 };

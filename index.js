@@ -3,33 +3,47 @@
 const loader = require('app-module-path');
 loader.addPath(__dirname + '/dist');
 
-const app = require('app').app;
+const initApp = require('app').initApp;
 const config = require('config').default.app;
+let app = null;
 
-async function shutdown() {
-  console.log('Closing the app...');
-  try {
-    await app.close();
-    console.log('App closed');
-    process.exit(0);
-  } catch (err) {
-    console.log(err);
+class AppManager {
+  constructor(app = null) {
+    this.app = app;
   }
+
+  async start() {
+    await this.app.bootAndListen(config.port);
+    console.log('app is listening');
+  };
+
+  async shutdown() {
+    console.log('Closing the app...');
+    console.log(this);
+    try {
+      await this.app.close();
+      console.log('App closed');
+      process.exit(0);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
 }
 
-process.on('SIGINT', async () => {
-  await shutdown();
-});
 
-process.on('SIGTERM', async () => {
-  await shutdown();
-});
+initApp().then(app => new AppManager(app))
+  .then(application => {
+    application.start();
+    bindEvents(application);
+  });
 
-async function start() {
-  console.log(app);
-  await app.bootAndListen(config.port);
-  console.log('app is listening');
+function bindEvents(application) {
+  process.on('SIGINT', async () => {
+    await application.shutdown(application);
+  });
+
+  process.on('SIGTERM', async () => {
+    await application.shutdown();
+  });
 }
-
-start();
-

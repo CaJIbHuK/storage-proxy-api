@@ -3,7 +3,7 @@ let init = async(ctx, next) => {
   await next();
 };
 
-export const nocache = {
+export default {
   name : 'nocache',
   init : (app) => app.use(init)
 };

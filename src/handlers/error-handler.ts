@@ -36,7 +36,7 @@ let init = async (ctx, next) => {
   }
 };
 
-export const errorHandler = {
+export default {
   name : 'errorHandler',
   init : (app) => app.use(init)
 };

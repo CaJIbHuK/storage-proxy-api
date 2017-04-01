@@ -1,30 +1,27 @@
 
 import Application from "./application";
-import * as sysHandlers from "./handlers/system.middleware";
+import config from "config";
 
 const app = new Application();
 app.proxy = true;
 
-let sHandlers = [
-  sysHandlers.helmet,
-  sysHandlers.mongoose,
-  sysHandlers.cors,
+const BASE = "./handlers";
 
-  sysHandlers.nocache,
-  sysHandlers.requestLogger,
-  sysHandlers.errorHandler,
-  sysHandlers.bodyparser,
-  sysHandlers.api_v1,
+const handlers = [
+  `mongoose`,
+  `helmet`,
+  `cors`,
+  `nocache`,
+  `reqLogger`,
+  `error-handler`,
+  `bodyparser`,
+  `authtokenparser`,
+  `apiRouter`
+].concat(config.handlers.v1);
 
-
-];
-sHandlers.forEach(handler => app.initHandler(handler));
-
-import * as appHandlers from "./handlers/apps.middleware";
-
-let aHandlers = [
-  appHandlers.auth
-];
-aHandlers.forEach(handler => app.initHandler(handler));
-
-export {app};
+export const initApp = async () => {
+  for(let handler of handlers) {
+    await app.initHandler(require(`${BASE}/${handler}`).default);
+  }
+  return app;
+};

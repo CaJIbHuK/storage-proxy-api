@@ -1,6 +1,6 @@
 import {connect} from "lib/mongoose";
 
-export const mongoose = {
+export default {
   name : "mongoose",
   init : () => connect()
 };

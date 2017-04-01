@@ -10,7 +10,8 @@ export default {
     instanceId : env.APP_INSTANCE_ID || 'storage-proxy',
     host : env.API_HOST || os.hostname() || 'localhost',
     port : env.API_PORT || 3000,
-    secret : env.SECRET || "CWv5mJkKrtuv6PC3K3zUeRDsprPm7LwEWN4QpkRdBDfzBjaYhzslWL49ASoDK85Vd2SV"
+    secret : env.SECRET || "CWv5mJkKrtuv6PC3K3zUeRDsprPm7LwEWN4QpkRdBDfzBjaYhzslWL49ASoDK85Vd2SV",
+    tokenTTL : env.TOKEN_TTL || 86400,
   },
   db : db,
   handlers : handlers

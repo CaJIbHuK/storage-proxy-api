@@ -1,6 +1,6 @@
 import * as koaBodyParser from "koa-bodyparser";
 
-export const bodyparser  = {
+export default {
   name : 'bodyparser',
   init : (app) => app.use(koaBodyParser())
 };

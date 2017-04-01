@@ -36,6 +36,7 @@
     "mongoose": "^4.9.1",
     "mongoose-auto-increment": "*",
     "mongoose-timestamp": "*",
+    "mongoose-unique-validator": "^1.0.5",
     "passthrough-counter": "^1.0.0",
     "path": "^0.11.14",
     "path-to-regexp": "^1.2.1",

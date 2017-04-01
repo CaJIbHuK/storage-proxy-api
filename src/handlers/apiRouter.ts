@@ -1,7 +1,7 @@
 import * as Router from "koa-router";
 import {mount} from "lib";
 
-export const api_v1 = {
+export default {
   name : 'api_v1',
   app : null,
   api : null,

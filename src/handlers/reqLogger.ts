@@ -2,13 +2,14 @@ import * as Koa from "koa"
 import {Logger} from "common";
 let log = Logger.getLogger('Request');
 
-export const requestLogger = {
+export default {
   name : 'requestLogger',
   init : (app) => app.use(async(ctx : Koa.Context, next) => {
     let logData = {
       request : {
         'url' : ctx.request.url,
         'method' : ctx.request.method,
+        'auth' : ctx.request.header['authorization'],
         'body' : ctx.request.body,
         'host' : ctx.request.header.host,
         'user-agent' : ctx.request.header['user-agent'],

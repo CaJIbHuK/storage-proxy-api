@@ -13,13 +13,14 @@ export default class Application extends Koa {
     super();
     this.handlers = [];
     this.log = Logger.getLogger('Boot');
+    this.context.log = Logger.getLogger('Context');
   }
 
-  initHandler(handler : Handler) {
+  async initHandler(handler : Handler) {
     this.handlers.push(handler);
     if (handler.init) {
       this.log.silly(`init -> ${handler.name}`);
-      handler.init(this);
+      await handler.init(this);
       this.log.silly(`init <- ${handler.name}`);
     }
   }

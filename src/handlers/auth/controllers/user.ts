@@ -1,4 +1,4 @@
-import * as Koa from "koa";
+import {AppContext} from "application";
 import {JWT} from "lib/jwt";
 import {userRepo, User, UserAuthInfo} from "handlers/users";
 import {AuthLib} from 'lib/auth';
@@ -23,7 +23,7 @@ let registerUser = async (data : UserAuthInfo) => {
 
 export const controllers = {
 
-  signup : async (ctx : Koa.Context, next) => {
+  signup : async (ctx : AppContext, next) => {
     let userInfo = filterInputData(ctx.request.body);
     let validationResult = User.validateAuthInfo(userInfo);
     if (!validationResult.result) ctx.throw(400, {message : validationResult.message});
@@ -33,7 +33,7 @@ export const controllers = {
     await next();
   },
 
-  signin : async (ctx : Koa.Context, next) => {
+  signin : async (ctx : AppContext, next) => {
     let authInfo = filterInputData(ctx.request.body);
     let validationResult = User.validateAuthInfo(authInfo);
     if (!validationResult.result) ctx.throw(400, {message : validationResult.message});

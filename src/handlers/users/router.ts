@@ -1,3 +1,9 @@
-/**
- * Created by zas on 19.03.17.
- */
+import * as Router from "koa-router";
+import {controllers} from "./controllers/user";
+
+
+const router = new Router();
+router
+  .get('/me', controllers.getMe);
+
+export {router};

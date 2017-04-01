@@ -1,5 +1,6 @@
 const v1 = [
-  "auth"
+  "auth",
+  "users"
 ];
 
 export default {

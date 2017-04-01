@@ -26,8 +26,11 @@ let init = async (ctx, next) => {
     if (err.name === 'ValidationError') {
       ctx.body = format(err);
       ctx.status = 400;
-    } else if (err instanceof Exception) {
-      ctx.body = err.toObject();
+    } else if (err.message && err.message === "invalid signature") {
+      ctx.body = {message : "Bad authorization token"};
+      ctx.status = 403;
+    } else if (err.statusCode && err.statusCode !== 500) {
+      ctx.body = {message : err.message};
       ctx.status = err.statusCode;
     } else {
       ctx.body = {message : 'Unexpected error.'};

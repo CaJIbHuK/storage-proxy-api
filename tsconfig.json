@@ -6,6 +6,7 @@
     "removeComments": true,
     "noImplicitAny": false,
     "preserveConstEnums": true,
+    "lib": ["es5", "es6", "es7"],
     "sourceMap": true,
     "newLine": "LF",
     "baseUrl": "./src",

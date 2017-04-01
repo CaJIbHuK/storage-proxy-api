@@ -37,7 +37,9 @@ export class User extends BaseModel<IUser> {
     return true;
   }
 
-  getNewJWTData() : JWTData {
+  async getNewJWTData() : Promise<JWTData> {
+    this.jwtVersion = this.jwtVersion + 1;
+    await this.save();
     return {
       id : this.id,
       vers : this.jwtVersion,
@@ -47,5 +49,11 @@ export class User extends BaseModel<IUser> {
 
 }
 
-class UserRepo extends BaseRepo<User> {}
+class UserRepo extends BaseRepo<User> {
+
+  findByEmail(email : string) {
+    return super.findOne({email : email});
+  }
+
+}
 export const userRepo = new UserRepo(UserSchemaModel, User);

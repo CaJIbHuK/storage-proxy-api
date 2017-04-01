@@ -8,11 +8,8 @@
     "preserveConstEnums": true,
     "sourceMap": true,
     "newLine": "LF",
-    "baseUrl": ".",
-    "outDir": "./dist",
-    "paths": {
-      "*":["./src/*"]
-    }
+    "baseUrl": "./src",
+    "outDir": "./dist"
   },
   "exclude": [
     "node_modules"

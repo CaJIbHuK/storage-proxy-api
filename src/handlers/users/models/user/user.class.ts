@@ -1,5 +1,6 @@
 import {BaseModel, BaseRepo, ValidationResult} from "common";
 import {JWTData} from "lib/jwt";
+import {GoogleApiToken} from "lib/googleApi";
 import {UserSchemaModel, IUser} from "./user.schema";
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -32,6 +33,12 @@ export class User extends BaseModel<IUser> {
 
   get salt() {return this._doc.salt};
   set salt(salt) {this._doc.salt = salt;};
+
+  get googleTokens() {return this._doc.tokens.google};
+  set googleTokens(tokens : GoogleApiToken) {
+    if (!this._doc.tokens) this._doc.tokens = {};
+    this._doc.tokens.google = tokens;
+  };
 
   async getNewJWTData() : Promise<JWTData> {
     this.jwtVersion = this.jwtVersion + 1;

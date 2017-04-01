@@ -26,7 +26,7 @@ let UserSchema = SchemaFactory.getNewSchema('User', {
     type : Number,
     default : 0
   },
-  tokens : {}
+  tokens : {type : Object, default : {}}
 });
 
 UserSchema.index({email : 1});

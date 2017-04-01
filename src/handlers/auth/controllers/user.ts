@@ -1,6 +1,8 @@
 import {AppContext} from "application";
 import {JWT} from "lib/jwt";
 import {userRepo, User, UserAuthInfo} from "handlers/users";
+import GoogleApi from "lib/googleApi";
+import {GoogleApiToken} from "lib/googleApi";
 import {AuthLib} from 'lib/auth';
 
 let filterInputData = (data : any) : UserAuthInfo => {
@@ -45,6 +47,20 @@ export const controllers = {
 
     ctx.body = {token : await getToken(user)};
     ctx.status = 200;
+    await next();
+  },
+
+  google : async (ctx : AppContext, next) => {
+    let userId = Number.parseInt(ctx.request.query.state);
+    if (!userId) ctx.throw('Unknown google auth callback');
+
+    let google  = GoogleApi.getAPI();
+    let googleTokens : GoogleApiToken = await google.getToken(ctx.request.query.code);
+
+    let user = await userRepo.findById(userId);
+    user.googleTokens = googleTokens;
+    await user.save();
+
     await next();
   },
 

@@ -1,6 +1,11 @@
 import * as mongoose from "mongoose";
 import {mongooseDocument} from "./base.schema";
 
+export interface ValidationResult {
+  result : boolean;
+  message? : string;
+}
+
 export class BaseModel<T extends mongooseDocument> {
 
   protected _doc : T;

@@ -1,8 +1,11 @@
-import {BaseModel, BaseRepo} from "common";
+import * as mongoose from "mongoose";
+import {BaseModel, BaseRepo, ValidationResult} from "common";
 import {JWTData} from "lib/jwt";
 import {UserSchemaModel, IUser} from "./user.schema";
 
 const MIN_PASSWORD_LENGTH = 8;
+const MAX_EMAIL_LENGTH = 100;
+const EMAIL_REGEXP = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$/i;
 
 export interface UserAuthInfo {
   email : string;
@@ -31,12 +34,6 @@ export class User extends BaseModel<IUser> {
   get salt() {return this._doc.salt};
   set salt(salt) {this._doc.salt = salt;};
 
-  validatePassword(password) : boolean {
-    if (!password) this._doc.invalidate('password', 'Password is required', password);
-    if (password.length < MIN_PASSWORD_LENGTH) this._doc.invalidate('password', 'Password must be at least  ' + MIN_PASSWORD_LENGTH + ' chars long.', password);
-    return true;
-  }
-
   async getNewJWTData() : Promise<JWTData> {
     this.jwtVersion = this.jwtVersion + 1;
     await this.save();
@@ -45,7 +42,35 @@ export class User extends BaseModel<IUser> {
       vers : this.jwtVersion,
       createdAt : new Date().getTime()
     }
-  }
+  };
+
+  //========VALIDATION==========//
+
+  static validateAuthInfo(authInfo : UserAuthInfo) : ValidationResult {
+    let validators : (() => ValidationResult)[] = [
+      this.validateEmail.bind(this, authInfo.email),
+      this.validatePassword.bind(this, authInfo.password),
+    ];
+
+    for(let validator of validators) {
+      let validation = validator();
+      if (!validation.result) return validation;
+    }
+    return {result : true};
+  };
+
+  static validatePassword(password : string) : ValidationResult {
+    if (!password) return {result : false, message : 'Password cannot be empty'};
+    if (password.length < MIN_PASSWORD_LENGTH) return {result : false, message : `Password must be at least ${MIN_PASSWORD_LENGTH} chars long.`};
+    return {result : true};
+  };
+
+  static validateEmail(email : string) : ValidationResult {
+    if (!email) return {result : false, message : "Email cannot be empty"};
+    if (email.length > MAX_EMAIL_LENGTH) return {result : false, message : "Email is too long"};
+    if (!EMAIL_REGEXP.test(email)) return {result : false, message : "Invalid email"};
+    return {result : true};
+  };
 
 }
 

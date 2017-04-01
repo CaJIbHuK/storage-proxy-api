@@ -1,21 +1,20 @@
-import * as Koa from "koa";
-import {userRepo} from "handlers/users"
+import {AppContext} from "application";
+import {User, userRepo} from "handlers/users"
 import {JWT} from "lib/jwt";
 
 
 
-const tokenParserMiddleware = async (ctx : Koa.Context, next) => {
+const tokenParserMiddleware = async (ctx : AppContext, next) => {
   let authHeader : string = ctx.request.header['authorization'];
   if (authHeader) {
     let token = authHeader.replace(/Bearer\s+/i,'');
     let tokenData = JWT.verify(token);
     if (tokenData) {
       let user = await userRepo.findById(tokenData.id);
-      ctx.user = JWT.validateToken(tokenData, user.jwtVersion) ? user : null;
+      ctx.user = tokenData.vers === user.jwtVersion ? user : null;
     }
   }
 
-  ctx.log.debug(ctx.user);
   await next();
 };
 

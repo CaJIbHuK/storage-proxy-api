@@ -1,11 +1,9 @@
 import * as jwt from "jsonwebtoken";
 import config from "config";
-import * as moment from "moment";
 
 export interface JWTData {
   id : number;
   vers : number;
-  createdAt : number;
 }
 
 export class JWT {
@@ -13,13 +11,8 @@ export class JWT {
   static deserializeData(data : JWTData) {
     return {
       id : Number(data.id),
-      vers : Number(data.vers),
-      createdAt : Number(data.createdAt)
+      vers : Number(data.vers)
     }
-  }
-
-  static validateToken(tokenData : JWTData, version : number) {
-    return (tokenData.vers === version) && (moment(moment.now()).diff(tokenData.createdAt, 'second') < Number(config.app.tokenTTL));
   }
 
   static decode(token : string) : JWTData {
@@ -27,7 +20,7 @@ export class JWT {
   };
 
   static sign(body : JWTData) {
-    return jwt.sign(body, config.app.secret);
+    return jwt.sign(body, config.app.secret, {expiresIn : `${config.app.tokenTTL}s`});
   }
 
   static verify(token : string) : JWTData | null {

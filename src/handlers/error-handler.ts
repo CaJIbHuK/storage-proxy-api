@@ -1,5 +1,6 @@
 import {Exception, Logger} from "common";
 import {ValidationError} from "mongoose";
+import {JsonWebTokenError} from "jsonwebtoken"
 let log = Logger.getLogger('Exception');
 
 interface ValidationApiError {
@@ -26,7 +27,7 @@ let init = async (ctx, next) => {
     if (err.name === 'ValidationError') {
       ctx.body = format(err);
       ctx.status = 400;
-    } else if (err.message && err.message === "invalid signature") {
+    } else if (err instanceof JsonWebTokenError) {
       ctx.body = {message : "Bad authorization token"};
       ctx.status = 403;
     } else if (err.statusCode && err.statusCode !== 500) {

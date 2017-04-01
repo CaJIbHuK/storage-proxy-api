@@ -1,4 +1,3 @@
-import * as mongoose from "mongoose";
 import {BaseModel, BaseRepo, ValidationResult} from "common";
 import {JWTData} from "lib/jwt";
 import {UserSchemaModel, IUser} from "./user.schema";
@@ -39,10 +38,23 @@ export class User extends BaseModel<IUser> {
     await this.save();
     return {
       id : this.id,
-      vers : this.jwtVersion,
-      createdAt : new Date().getTime()
+      vers : this.jwtVersion
     }
   };
+
+  //========FORMATTER==========//
+
+  static formatUser(user : User) : Object {
+    return {
+      id : user.id,
+      email : user.email,
+      name : user.name
+    };
+  }
+
+  static formatAdmin(user : User) : Object {
+    return user.toObject();
+  }
 
   //========VALIDATION==========//
 

@@ -1,13 +1,18 @@
-'use strict';
-
 import * as Koa from "koa";
+import * as Router from "koa-router";
 import {Logger} from "./common/logger";
 import {Handler} from "./common/handler";
+
+export interface AppContext extends Router.IRouterContext {
+  user : any;
+  log : Logger;
+}
 
 export default class Application extends Koa {
 
   handlers : any;
   log : Logger;
+  context : AppContext;
 
   constructor() {
     super();

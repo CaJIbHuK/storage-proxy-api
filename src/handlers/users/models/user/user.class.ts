@@ -1,6 +1,6 @@
 import {BaseModel, BaseRepo, ValidationResult} from "common";
 import {JWTData} from "lib/jwt";
-import {GoogleApiToken} from "lib/googleApi";
+import {GoogleApiToken} from "lib/storage/google";
 import {UserSchemaModel, IUser} from "./user.schema";
 
 const MIN_PASSWORD_LENGTH = 8;

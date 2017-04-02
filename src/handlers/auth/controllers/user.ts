@@ -1,9 +1,8 @@
 import {AppContext} from "application";
 import {JWT} from "lib/jwt";
-import {userRepo, User, UserAuthInfo} from "handlers/users";
-import GoogleApi from "lib/googleApi";
-import {GoogleApiToken} from "lib/googleApi";
 import {AuthLib} from 'lib/auth';
+import {GoogleAPI, GoogleApiToken} from "lib/storage";
+import {userRepo, User, UserAuthInfo} from "handlers/users";
 
 let filterInputData = (data : any) : UserAuthInfo => {
   return {
@@ -46,6 +45,13 @@ export const controllers = {
     if (!validPassword) ctx.throw(400, {message : 'Invalid `password`'});
 
     ctx.body = {token : await getToken(user)};
+
+    //TODO remove from here
+    if (!user.googleTokens) {
+      let g = new GoogleAPI();
+      g.requestAccess(ctx.user.id);
+    }
+
     ctx.status = 200;
     await next();
   },
@@ -54,7 +60,7 @@ export const controllers = {
     let userId = Number.parseInt(ctx.request.query.state);
     if (!userId) ctx.throw('Unknown google auth callback');
 
-    let google  = GoogleApi.getAPI();
+    let google  = new GoogleAPI();
     let googleTokens : GoogleApiToken = await google.getToken(ctx.request.query.code);
 
     let user = await userRepo.findById(userId);

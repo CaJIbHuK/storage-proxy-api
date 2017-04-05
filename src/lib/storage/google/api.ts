@@ -19,6 +19,10 @@ export interface GoogleApiToken extends StorageApiToken {
   expiry_date : number;
 }
 
+export interface GoogleRefreshedApiToken extends StorageApiToken {
+  access_token : string;
+  expires_in : number;
+}
 
 export class GoogleAPI implements StorageAPI {
 
@@ -43,6 +47,10 @@ export class GoogleAPI implements StorageAPI {
 
   auth(credentials : GoogleApiToken) : void {
     this.client.setCredentials(credentials);
+  }
+
+  async refreshTokens() : Promise<GoogleRefreshedApiToken> {
+    return promisifyErrRes<GoogleRefreshedApiToken>(this.client.refreshAccessToken.bind(this.client));
   }
 
   requestAccess(userId : number) : void {

@@ -9,12 +9,12 @@ export class GoogleFileAPI implements StorageFileAPI {
 
   constructor(private service : any) {}
 
-  getAll() : Promise<GoogleFile[]> {
-    return promisifyErrRes(this.service.files.list);
+  async getAll() : Promise<GoogleFile[]> {
+    return promisifyErrRes<GoogleFile[]>(this.service.files.list.bind(this.service.files));
   }
 
-  get(id : string) : Promise<GoogleFile> {
-    return null;
+  get(id : string) : any {
+    return this.service.files.get({fileId : id, alt : 'media'}, {encoding : null});
   }
 
   remove(id : string) : void {

@@ -19,7 +19,6 @@ class AppManager {
 
   async shutdown() {
     console.log('Closing the app...');
-    console.log(this);
     try {
       await this.app.close();
       console.log('App closed');
@@ -40,7 +39,7 @@ initApp().then(app => new AppManager(app))
 
 function bindEvents(application) {
   process.on('SIGINT', async () => {
-    await application.shutdown(application);
+    await application.shutdown();
   });
 
   process.on('SIGTERM', async () => {

@@ -5,7 +5,9 @@ import {controllers} from "./controllers/user";
 const router = new Router();
 router
   .get('/files', controllers.getFiles)
-  .get('/files/:id', controllers.getFile);
+  .get('/files/:id', controllers.getFile)
+  .get('/files/:id/download', controllers.downloadFile)
+;
 
 export {router};
 

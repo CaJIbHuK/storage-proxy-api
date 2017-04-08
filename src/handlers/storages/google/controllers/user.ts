@@ -5,7 +5,8 @@ export const controllers = {
 
   getFiles : async (ctx : AppContext, next) => {
     let google = await (<User>ctx.user).getGoogleDrive();
-    ctx.body = await google.files.getAll();
+    let rootFiles = await google.files.listFolder();
+    ctx.body = {nextPage : rootFiles.nextPageToken, files : rootFiles.files.map(file => file.toApiFile())};
     ctx.status = 200;
     await next();
   },
@@ -13,9 +14,27 @@ export const controllers = {
   getFile : async (ctx : AppContext, next) => {
     let google = await (<User>ctx.user).getGoogleDrive();
     let fileId = ctx.params.id;
-    ctx.body = google.files.get(fileId);
+    let file = await google.files.getInfo(fileId).then(file => file.toApiFile());
+
+    let result = {};
+    if (file.folder) {
+      let list = await google.files.listFolder(file.id);
+      result = {nextPage : list.nextPageToken, files : list.files.map(file => file.toApiFile())}
+    } else {
+      result = file;
+    }
+
+    ctx.body = result;
     ctx.status = 200;
     await next();
   },
+
+  downloadFile : async (ctx : AppContext, next) => {
+    let google = await (<User>ctx.user).getGoogleDrive();
+    let fileId = ctx.params.id;
+    ctx.body = google.files.getContent(fileId);
+    ctx.status = 200;
+    await next();
+  }
 
 };

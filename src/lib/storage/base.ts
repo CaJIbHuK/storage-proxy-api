@@ -1,10 +1,23 @@
+import {APIFile} from "./common/file";
 
-export interface StorageFile {}
+export interface StorageFile {
+  id : string;
+  name : string;
+
+  toApiFile() : APIFile;
+}
+
+export interface StorageFileList {
+  files : StorageFile[];
+}
 
 export interface StorageFileAPI {
 
-  getAll() : Promise<StorageFile[]>;
-  get(id : string) : Promise<StorageFile>;
+  list(query? : any) : Promise<StorageFileList>;
+  getInfo(id : string) : Promise<StorageFile>;
+  getContent(id : string) : any;
+  create(data : any) : StorageFile;
+  update(id : string, data) : StorageFile;
   remove(id : string);
 
 }

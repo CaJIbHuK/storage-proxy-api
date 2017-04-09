@@ -8,4 +8,5 @@ export interface APIFile {
   createdAt : Date;
   updatedAt : Date;
   storage : string;
+  parents : string[];
 }

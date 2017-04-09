@@ -1,4 +1,5 @@
 import {APIFile} from "./common/file";
+import {Readable} from "stream";
 
 export interface StorageFile {
   id : string;
@@ -14,10 +15,12 @@ export interface StorageFileList {
 export interface StorageFileAPI {
 
   list(query? : any) : Promise<StorageFileList>;
-  getInfo(id : string) : Promise<StorageFile>;
-  getContent(id : string) : any;
-  create(data : any) : StorageFile;
-  update(id : string, data) : StorageFile;
+  listFolder(id : string, query? : any) : Promise<StorageFileList>;
+  get(id : string) : Promise<StorageFile>;
+  create(data : any) : Promise<StorageFile>;
+  update(id : string, data : any) : Promise<StorageFile>;
+  upload(id : string, data : any) : Promise<StorageFile>;
+  download(id : string, data : any) : Readable;
   remove(id : string);
 
 }

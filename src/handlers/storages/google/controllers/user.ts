@@ -39,7 +39,7 @@ export const controllers = {
   downloadFile : async (ctx : AppContext, next) => {
     let google = await (<User>ctx.user).getGoogleDrive();
     let fileId = ctx.params.id;
-    ctx.body = google.files.download(fileId);
+    ctx.body = await google.files.download(fileId);
     ctx.status = 200;
     await next();
   },

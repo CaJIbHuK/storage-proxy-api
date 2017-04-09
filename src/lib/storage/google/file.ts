@@ -23,7 +23,25 @@ export class GoogleFile implements StorageFile {
   static FIELDS_TO_RETRIEVE = GoogleFile.FIELDS.join(',');
 
   static MIME_TYPES = {
-    folder : "application/vnd.google-apps.folder"
+    folder : "application/vnd.google-apps.folder",
+    gDoc : 'application/vnd.google-apps.document',
+    gDraw : 'application/vnd.google-apps.drawing',
+    gPresentation : 'application/vnd.google-apps.presentation',
+    gSheets : 'application/vnd.google-apps.spreadsheet',
+    pdf : 'application/pdf',
+    doc : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    png : 'image/png',
+    ppt : 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    xlsx : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+  };
+
+  static MIME_TYPE_CONVERSIONS = {
+    [GoogleFile.MIME_TYPES.gDoc] : GoogleFile.MIME_TYPES.doc,
+    [GoogleFile.MIME_TYPES.gDraw] : GoogleFile.MIME_TYPES.png,
+    [GoogleFile.MIME_TYPES.gPresentation] : GoogleFile.MIME_TYPES.ppt,
+    [GoogleFile.MIME_TYPES.gSheets] : GoogleFile.MIME_TYPES.xlsx,
+    DEFAULT : GoogleFile.MIME_TYPES.pdf
   };
 
   id : string;
@@ -51,6 +69,13 @@ export class GoogleFile implements StorageFile {
   }
 
   get folder() {return this.mimeType === GoogleFile.MIME_TYPES.folder}
+
+  get googleApp() {return /application\/vnd.google-apps/.test(this.mimeType)}
+
+  get exportMimeType() {
+    let mimeType = GoogleFile.MIME_TYPE_CONVERSIONS[this.mimeType];
+    return mimeType || GoogleFile.MIME_TYPE_CONVERSIONS.DEFAULT;
+  }
 
   toApiFile() : APIFile {
     return {
@@ -104,7 +129,6 @@ export class GoogleFileAPI implements StorageFileAPI {
     return promisifyErrRes<T>(cb.bind.apply(cb, [this.service.files].concat(args)));
   }
 
-
   list(params : GoogleFileListQuery = {}) : Promise<GoogleFileList> {
     let data = {
       q : params.query || "",
@@ -129,6 +153,13 @@ export class GoogleFileAPI implements StorageFileAPI {
     return this.makeRequest<GoogleFile>(this.service.files.get, {fileId : id}).then(file => new GoogleFile(file));
   }
 
+  getContent(id : string) : Readable {
+    return this.service.files.get({fileId : id, alt : 'media'}, {encoding : null});
+  }
+
+  export(id : string, mimeType : string) : Readable {
+    return this.service.files.export({fileId : id, mimeType : mimeType}, {encoding : null});
+  }
 
   create(data : {name? : string, parents? : string[]}) : Promise<GoogleFile> {
     let fileData = {
@@ -164,9 +195,9 @@ export class GoogleFileAPI implements StorageFileAPI {
     return this.update(id, {content : data});
   }
 
-  download(id : string) : Readable {
-    //TODO export for gdoc files
-    return this.service.files.get({fileId : id, alt : 'media'}, {encoding : null});
+  download(id : string) : Promise<Readable> {
+    return this.get(id)
+      .then(file => file.googleApp ? this.export(id, file.exportMimeType) : this.getContent(id));
   }
 
   async remove(id : string) {

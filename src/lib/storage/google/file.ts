@@ -60,7 +60,8 @@ export class GoogleFile implements StorageFile {
       updatedAt : new Date(this.modifiedTime),
       size : this.size,
       folder : this.folder,
-      storage : STORAGE_NAME
+      storage : STORAGE_NAME,
+      parents : this.parents
     };
   }
 
@@ -87,14 +88,22 @@ export class GoogleFileAPI implements StorageFileAPI {
   constructor(private service : any) {
   }
 
-  private makeRequest<T>(cb, ...args) : Promise<T> {
+  private getFieldsPopulationOption(action) {
+    let fields = GoogleFile.FIELDS_TO_RETRIEVE;
+    if (/list/.test(action)) fields = `files(${fields})`;
+    return fields;
+  }
+
+  private makeRequest<T>(cb : Function, ...args) : Promise<T> {
+    if (args.length) {
+      let fieldsPopulation = args[0].fields || [];
+      let fileFields = this.getFieldsPopulationOption(cb.name);
+      fieldsPopulation.push(fileFields);
+      args[0].fields = fieldsPopulation.join(',');
+    }
     return promisifyErrRes<T>(cb.bind.apply(cb, [this.service.files].concat(args)));
   }
 
-//appProperties has { key='additionalID' and value='8e8aceg2af2ge72e78' }
-  //'1234567' in parents
-  //mimeType != 'application/vnd.google-apps.folder'
-  //mimeType = 'application/vnd.google-apps.folder'
 
   list(params : GoogleFileListQuery = {}) : Promise<GoogleFileList> {
     let data = {
@@ -102,7 +111,7 @@ export class GoogleFileAPI implements StorageFileAPI {
       spaces : GoogleFileAPI.SPACES.drive,
       pageToken : params.page || null,
       pageSize : params.pageSize || 1000,
-      fields : `nextPageToken, ${GoogleFile.FIELDS_TO_RETRIEVE}`
+      fields : ['nextPageToken']
     };
     return this.makeRequest<GoogleFileList>(this.service.files.list, data)
       .then(response => ({
@@ -116,23 +125,51 @@ export class GoogleFileAPI implements StorageFileAPI {
     return this.list(params);
   }
 
-  getInfo(id : string) : Promise<GoogleFile> {
-    return this.makeRequest<GoogleFile>(this.service.files.get, {fileId : id, fields : GoogleFile.FIELDS_TO_RETRIEVE}).then(file => new GoogleFile(file));
+  get(id : string) : Promise<GoogleFile> {
+    return this.makeRequest<GoogleFile>(this.service.files.get, {fileId : id}).then(file => new GoogleFile(file));
   }
 
-  getContent(id : string) : Readable {
+
+  create(data : {name? : string, parents? : string[]}) : Promise<GoogleFile> {
+    let fileData = {
+      resource : {
+        name : data.name,
+        parents : data.parents || [GoogleFileAPI.ROOT_FOLDER_ID]
+      }
+    };
+    return this.makeRequest<GoogleFile>(this.service.files.create, fileData)
+      .then(file => new GoogleFile(file));
+  }
+
+  update(id : string, data : {name? : string, parents? : string[], content? : any, mimeType? : string} = {}) : Promise<GoogleFile> {
+
+    let resourceData : {name?, parents?} = {};
+    if (data.name) resourceData.name = data.name;
+    if (data.parents) resourceData.parents = data.parents;
+
+    let media : {body?, mimeType?} = {};
+    if (data.content) media.body = data.content;
+    if (data.mimeType) media.mimeType = data.mimeType;
+
+    let dataToUpdate = {
+      fileId : id,
+      resource : resourceData,
+      media : media
+    };
+
+    return this.makeRequest<GoogleFile>(this.service.files.update, dataToUpdate).then(file => new GoogleFile(file));
+  }
+
+  upload(id : string, data : any) : Promise<GoogleFile> {
+    return this.update(id, {content : data});
+  }
+
+  download(id : string) : Readable {
     //TODO export for gdoc files
     return this.service.files.get({fileId : id, alt : 'media'}, {encoding : null});
   }
 
-  create(data : any) : GoogleFile {
-    return null;
-  }
-
-  update(id : string, data) : GoogleFile {
-    return null;
-  }
-
-  remove(id : string) {
+  async remove(id : string) {
+    return this.service.files.delete({fileId : id});
   }
 }

@@ -4,13 +4,48 @@ import {APIFile} from "lib/storage/common/file";
 import {Readable} from "stream";
 const STORAGE_NAME = 'google';
 
-export class GoogleFile implements StorageFile {
+export class GoogleValidationError implements Error {
+  name : string = "GoogleValidationError";
+  message : string = "Invalid params";
+  constructor(message? : string) {
+    if (message) this.message = message;
+  }
+}
+
+export class GoogleRequestError implements Error {
+  name : string = "GoogleRequestError";
+  message : string = "Error occurred during request to Google";
+  status : number = 500;
+  constructor(message? : string, status? : number) {
+    if (message) this.message = message;
+    if (status) this.status = status;
+  }
+}
+
+export interface IGoogleDriveFileMetaData {
+  id? : string;
+  name? : string;
+  description? : string;
+  parents? : any;
+  trashed? : boolean;
+  mimeType? : string;
+  properties? : any;
+  appProperties? : any;
+}
+
+export interface IGoogleDriveFileMediaData {
+  body? : any;
+  mimeType? : string;
+}
+
+export class GoogleDriveFile implements StorageFile {
 
   //for query
   static FIELDS : string[] = [
     'id',
     'name',
     'parents',
+    'description',
     'mimeType',
     'trashed',
     'properties',
@@ -20,7 +55,7 @@ export class GoogleFile implements StorageFile {
     'size'
   ];
 
-  static FIELDS_TO_RETRIEVE = GoogleFile.FIELDS.join(',');
+  static FIELDS_TO_RETRIEVE = GoogleDriveFile.FIELDS.join(',');
 
   static MIME_TYPES = {
     folder : "application/vnd.google-apps.folder",
@@ -37,11 +72,11 @@ export class GoogleFile implements StorageFile {
   };
 
   static MIME_TYPE_CONVERSIONS = {
-    [GoogleFile.MIME_TYPES.gDoc] : GoogleFile.MIME_TYPES.doc,
-    [GoogleFile.MIME_TYPES.gDraw] : GoogleFile.MIME_TYPES.png,
-    [GoogleFile.MIME_TYPES.gPresentation] : GoogleFile.MIME_TYPES.ppt,
-    [GoogleFile.MIME_TYPES.gSheets] : GoogleFile.MIME_TYPES.xlsx,
-    DEFAULT : GoogleFile.MIME_TYPES.pdf
+    [GoogleDriveFile.MIME_TYPES.gDoc] : GoogleDriveFile.MIME_TYPES.doc,
+    [GoogleDriveFile.MIME_TYPES.gDraw] : GoogleDriveFile.MIME_TYPES.png,
+    [GoogleDriveFile.MIME_TYPES.gPresentation] : GoogleDriveFile.MIME_TYPES.ppt,
+    [GoogleDriveFile.MIME_TYPES.gSheets] : GoogleDriveFile.MIME_TYPES.xlsx,
+    DEFAULT : GoogleDriveFile.MIME_TYPES.pdf
   };
 
   id : string;
@@ -49,6 +84,7 @@ export class GoogleFile implements StorageFile {
   parents : any[]; //folders
   trashed : boolean;
   mimeType : string;
+  description : string;
   properties : any;
   appProperties : any; //private props for app
   createdTime : string;//date-time RFC3339 2012-06-04T12:00:00-08:00.
@@ -59,6 +95,7 @@ export class GoogleFile implements StorageFile {
     this.id = data.id;
     this.name = data.name;
     this.mimeType = data.mimeType;
+    this.description = data.description;
     this.parents = data.parents;
     this.trashed = data.trashed;
     this.properties = data.properties;
@@ -68,19 +105,22 @@ export class GoogleFile implements StorageFile {
     this.size = data.size;
   }
 
-  get folder() {return this.mimeType === GoogleFile.MIME_TYPES.folder}
+  get encrypted() : boolean {return this.appProperties && this.appProperties.encrypted;}
 
-  get googleApp() {return /application\/vnd.google-apps/.test(this.mimeType)}
+  get folder() : boolean {return this.mimeType === GoogleDriveFile.MIME_TYPES.folder}
 
-  get exportMimeType() {
-    let mimeType = GoogleFile.MIME_TYPE_CONVERSIONS[this.mimeType];
-    return mimeType || GoogleFile.MIME_TYPE_CONVERSIONS.DEFAULT;
+  get googleApp() : boolean {return /application\/vnd.google-apps/.test(this.mimeType)}
+
+  get exportMimeType() : string {
+    let mimeType = GoogleDriveFile.MIME_TYPE_CONVERSIONS[this.mimeType];
+    return mimeType || GoogleDriveFile.MIME_TYPE_CONVERSIONS.DEFAULT;
   }
 
   toApiFile() : APIFile {
     return {
       id : this.id,
       name : this.name,
+      description : this.description,
       createdAt : new Date(this.createdTime),
       updatedAt : new Date(this.modifiedTime),
       size : this.size,
@@ -92,17 +132,18 @@ export class GoogleFile implements StorageFile {
 
 }
 
-interface GoogleFileListQuery {
+export interface GoogleDriveFileListQuery {
   query? : string;
   pageSize? : number;
   page? : string;
 }
 
-interface GoogleFileList extends StorageFileList{
+export interface GoogleDriveFileList extends StorageFileList{
   nextPageToken : string;
+  files : GoogleDriveFile[];
 }
 
-export class GoogleFileAPI implements StorageFileAPI {
+export class GoogleDriveFileAPI implements StorageFileAPI {
 
   static ROOT_FOLDER_ID = 'root';
 
@@ -114,43 +155,45 @@ export class GoogleFileAPI implements StorageFileAPI {
   }
 
   private getFieldsPopulationOption(action) {
-    let fields = GoogleFile.FIELDS_TO_RETRIEVE;
+    let fields = GoogleDriveFile.FIELDS_TO_RETRIEVE;
     if (/list/.test(action)) fields = `files(${fields})`;
     return fields;
   }
 
   private makeRequest<T>(cb : Function, ...args) : Promise<T> {
-    if (args.length) {
+    if (args.length && !args[0].noPopulation) {
       let fieldsPopulation = args[0].fields || [];
       let fileFields = this.getFieldsPopulationOption(cb.name);
       fieldsPopulation.push(fileFields);
       args[0].fields = fieldsPopulation.join(',');
     }
-    return promisifyErrRes<T>(cb.bind.apply(cb, [this.service.files].concat(args)));
+    if (args.length) delete args[0].noPopulation;
+    return promisifyErrRes<T>(cb.bind.apply(cb, [this.service.files].concat(args)))
+      .catch(err => {throw new GoogleRequestError(err.message, err.code)});
   }
 
-  list(params : GoogleFileListQuery = {}) : Promise<GoogleFileList> {
+  list(params : GoogleDriveFileListQuery = {}) : Promise<GoogleDriveFileList> {
     let data = {
       q : params.query || "",
-      spaces : GoogleFileAPI.SPACES.drive,
+      spaces : GoogleDriveFileAPI.SPACES.drive,
       pageToken : params.page || null,
       pageSize : params.pageSize || 1000,
       fields : ['nextPageToken']
     };
-    return this.makeRequest<GoogleFileList>(this.service.files.list, data)
+    return this.makeRequest<GoogleDriveFileList>(this.service.files.list, data)
       .then(response => ({
         nextPageToken : response.nextPageToken,
-        files : response.files.map(file => new GoogleFile(file))
+        files : response.files.map(file => new GoogleDriveFile(file))
       }));
   }
 
-  listFolder(folderId : string = GoogleFileAPI.ROOT_FOLDER_ID, params : GoogleFileListQuery = {}) : Promise<GoogleFileList> {
+  listFolder(folderId : string = GoogleDriveFileAPI.ROOT_FOLDER_ID, params : GoogleDriveFileListQuery = {}) : Promise<GoogleDriveFileList> {
     params.query = (params.query || "").concat(`'${folderId}' in parents`);
     return this.list(params);
   }
 
-  get(id : string) : Promise<GoogleFile> {
-    return this.makeRequest<GoogleFile>(this.service.files.get, {fileId : id}).then(file => new GoogleFile(file));
+  get(id : string) : Promise<GoogleDriveFile> {
+    return this.makeRequest<GoogleDriveFile>(this.service.files.get, {fileId : id}).then(file => new GoogleDriveFile(file));
   }
 
   getContent(id : string) : Readable {
@@ -161,38 +204,30 @@ export class GoogleFileAPI implements StorageFileAPI {
     return this.service.files.export({fileId : id, mimeType : mimeType}, {encoding : null});
   }
 
-  create(data : {name? : string, parents? : string[]}) : Promise<GoogleFile> {
-    let fileData = {
-      resource : {
-        name : data.name,
-        parents : data.parents || [GoogleFileAPI.ROOT_FOLDER_ID]
-      }
-    };
-    return this.makeRequest<GoogleFile>(this.service.files.create, fileData)
-      .then(file => new GoogleFile(file));
+  generateId() : Promise<string> {
+    return this.makeRequest<{ids : string[]}>(this.service.files.generateIds,{noPopulation : true, count : 1})
+      .then(result => result.ids[0]);
   }
 
-  update(id : string, data : {name? : string, parents? : string[], content? : any, mimeType? : string} = {}) : Promise<GoogleFile> {
+  create(data : IGoogleDriveFileMetaData = {}) : Promise<GoogleDriveFile> {
+    if (!data.name) throw new GoogleValidationError("Property `name` is required.");
+    let fileData = {resource : data};
+    if (!fileData.resource.parents) fileData.resource.parents = [GoogleDriveFileAPI.ROOT_FOLDER_ID];
+    return this.makeRequest<GoogleDriveFile>(this.service.files.create, fileData)
+      .then(file => new GoogleDriveFile(file));
+  }
 
-    let resourceData : {name?, parents?} = {};
-    if (data.name) resourceData.name = data.name;
-    if (data.parents) resourceData.parents = data.parents;
-
-    let media : {body?, mimeType?} = {};
-    if (data.content) media.body = data.content;
-    if (data.mimeType) media.mimeType = data.mimeType;
-
+  update(id : string, resourceData : IGoogleDriveFileMetaData = {}, mediaData : IGoogleDriveFileMediaData = {}) : Promise<GoogleDriveFile> {
     let dataToUpdate = {
       fileId : id,
       resource : resourceData,
-      media : media
+      media : mediaData
     };
-
-    return this.makeRequest<GoogleFile>(this.service.files.update, dataToUpdate).then(file => new GoogleFile(file));
+    return this.makeRequest<GoogleDriveFile>(this.service.files.update, dataToUpdate).then(file => new GoogleDriveFile(file));
   }
 
-  upload(id : string, data : any) : Promise<GoogleFile> {
-    return this.update(id, {content : data});
+  upload(id : string, data : any) : Promise<GoogleDriveFile> {
+    return this.update(id,{},{body : data});
   }
 
   download(id : string) : Promise<Readable> {

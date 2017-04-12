@@ -1,2 +1,2 @@
-export {GoogleAPI, GoogleApiToken} from "./api";
-export {GoogleFile} from "./file";
+export * from "./api";
+export * from "./file";

@@ -3,6 +3,7 @@ export interface APIFile {
 
   id : string;
   name : string;
+  description : string;
   size : number;
   folder : boolean;
   createdAt : Date;

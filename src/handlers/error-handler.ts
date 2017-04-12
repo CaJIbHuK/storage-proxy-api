@@ -1,5 +1,6 @@
 import {Exception, Logger} from "common";
 import {ValidationError} from "mongoose";
+import {GoogleRequestError} from "lib/storage/google";
 import {JsonWebTokenError} from "jsonwebtoken"
 let log = Logger.getLogger('Exception');
 
@@ -30,6 +31,9 @@ let init = async (ctx, next) => {
     } else if (err instanceof JsonWebTokenError) {
       ctx.body = {message : "Bad authorization token"};
       ctx.status = 403;
+    } else if (err instanceof GoogleRequestError) {
+      ctx.body = {message : err.message};
+      ctx.status = err.status;
     } else if (err.statusCode && err.statusCode !== 500) {
       ctx.body = {message : err.message};
       ctx.status = err.statusCode;

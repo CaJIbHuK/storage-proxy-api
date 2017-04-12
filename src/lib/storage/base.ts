@@ -20,7 +20,7 @@ export interface StorageFileAPI {
   create(data : any) : Promise<StorageFile>;
   update(id : string, data : any) : Promise<StorageFile>;
   upload(id : string, data : any) : Promise<StorageFile>;
-  download(id : string, data : any) : Readable;
+  download(id : string) : Promise<Readable>;
   remove(id : string);
 
 }

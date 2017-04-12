@@ -2,14 +2,14 @@ import config from "config";
 import * as google from "googleapis";
 import {promisifyErrRes} from "lib/promisify";
 import {StorageAPI, StorageApiToken} from "lib/storage/base";
-import {GoogleFile, GoogleFileAPI} from "./file";
+import {GoogleDriveFileAPI} from "./file";
 
 
 const openurl = require('openurl');
 const OAuth2 = google.auth.OAuth2;
 
 const googleConfig = config.app.google;
-//TODO refacotor
+//TODO refactor
 const REDIRECT = "http://localhost:3000/api/v1/auth/google";
 
 export interface GoogleApiToken extends StorageApiToken {
@@ -24,7 +24,7 @@ export interface GoogleRefreshedApiToken extends StorageApiToken {
   expires_in : number;
 }
 
-export class GoogleAPI implements StorageAPI {
+export class GoogleDriveAPI implements StorageAPI {
 
   private client : any;
   private service : any;
@@ -32,7 +32,7 @@ export class GoogleAPI implements StorageAPI {
     'https://www.googleapis.com/auth/drive'
   ];
 
-  public files : GoogleFileAPI;
+  public files : GoogleDriveFileAPI;
 
   constructor(credentials? : GoogleApiToken) {
     this.client = new OAuth2(
@@ -42,7 +42,7 @@ export class GoogleAPI implements StorageAPI {
     );
     if (credentials) this.auth(credentials);
     this.service = google.drive({version : 'v3', auth : this.client});
-    this.files = new GoogleFileAPI(this.service);
+    this.files = new GoogleDriveFileAPI(this.service);
   }
 
   auth(credentials : GoogleApiToken) : void {

@@ -1,6 +1,13 @@
 import * as mongoose from "mongoose";
 
-export class BaseRepo<T> {
+export interface IRepo {
+  create(...args) : any;
+  find(...args) : any;
+  findOne(...args) : any;
+  findById(id) : any;
+}
+
+export class BaseRepo<T> implements IRepo {
 
   private _model : mongoose.Model<mongoose.Document>;
   private _cls : any;

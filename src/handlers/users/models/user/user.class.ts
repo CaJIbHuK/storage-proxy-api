@@ -1,7 +1,7 @@
 import {BaseModel, BaseRepo, ValidationResult} from "common";
 import {JWTData} from "lib/jwt";
 import {GoogleApiToken} from "lib/storage/google";
-import {GoogleAPI} from "lib/storage/google";
+import {GoogleFileManager} from "handlers/storages/google";
 import {UserSchemaModel, IUser} from "./user.schema";
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -15,8 +15,6 @@ export interface UserAuthInfo {
 }
 
 export class User extends BaseModel<IUser> {
-
-  get id() {return this._doc._id};
 
   get email() {return this._doc.email};
   set email(email) {this._doc.email = email};
@@ -41,15 +39,15 @@ export class User extends BaseModel<IUser> {
     this._doc.tokens.google = tokens;
   };
 
-  async getGoogleDrive() : Promise<GoogleAPI> {
-    let googleDrive = new GoogleAPI(this.googleTokens);
+  async getGoogleDrive() : Promise<GoogleFileManager> {
+    let googleFileManager = new GoogleFileManager(this.googleTokens);
     if (this.googleTokens.expiry_date < (new Date()).getTime()) {
-      let refreshedTokens = await googleDrive.refreshTokens();
+      let refreshedTokens = await googleFileManager.googleDrive.refreshTokens();
       this.googleTokens.access_token = refreshedTokens.access_token;
       this.googleTokens.expiry_date = (new Date().getTime()) + (refreshedTokens.expires_in * 1000);
       await this.save();
     }
-    return googleDrive;
+    return googleFileManager;
   }
 
   async getNewJWTData() : Promise<JWTData> {

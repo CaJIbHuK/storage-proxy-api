@@ -1,7 +1,7 @@
 import {AppContext} from "application";
 import {JWT} from "lib/jwt";
 import {AuthLib} from 'lib/auth';
-import {GoogleAPI, GoogleApiToken} from "lib/storage";
+import {GoogleApiToken} from "lib/storage";
 import {userRepo, User, UserAuthInfo} from "handlers/users";
 
 let filterInputData = (data : any) : UserAuthInfo => {

@@ -7,13 +7,13 @@ interface FileData {
   parents? : string[];
 }
 
+const FIELDS = ['name', 'parents'];
 
 export const controllers = {
 
   getFiles : async (ctx : AppContext, next) => {
     let google = await (<User>ctx.user).getGoogleDrive();
-    let rootFiles = await google.files.listFolder();
-    ctx.body = {nextPage : rootFiles.nextPageToken, files : rootFiles.files.map(file => file.toApiFile())};
+    ctx.body = await google.listFolder();
     ctx.status = 200;
     await next();
   },
@@ -21,17 +21,9 @@ export const controllers = {
   getFile : async (ctx : AppContext, next) => {
     let google = await (<User>ctx.user).getGoogleDrive();
     let fileId = ctx.params.id;
-    let file = await google.files.get(fileId).then(file => file.toApiFile());
-
-    let result = {};
-    if (file.folder) {
-      let list = await google.files.listFolder(file.id);
-      result = {nextPage : list.nextPageToken, files : list.files.map(file => file.toApiFile())}
-    } else {
-      result = file;
-    }
-
-    ctx.body = result;
+    let file = await google.get(fileId);
+    if (!file) ctx.throw(404, 'File not found');
+    ctx.body = file.folder ? await google.listFolder(file.id) : file;
     ctx.status = 200;
     await next();
   },
@@ -39,16 +31,17 @@ export const controllers = {
   downloadFile : async (ctx : AppContext, next) => {
     let google = await (<User>ctx.user).getGoogleDrive();
     let fileId = ctx.params.id;
-    ctx.body = await google.files.download(fileId);
+    ctx.body = await google.download(fileId);
     ctx.status = 200;
     await next();
   },
 
   createFile : async (ctx : AppContext, next) => {
     let google = await (<User>ctx.user).getGoogleDrive();
-    let data = filterObject<FileData>(ctx.request.body, ['name', 'parents']);
+    let encrypt = ctx.request.body.encrypt;
+    let data = filterObject<FileData>(ctx.request.body, FIELDS);
     if (!data.name) ctx.throw(400, 'Invalid name');
-    ctx.body = await google.files.create(data);
+    ctx.body = await google.create(data, encrypt);
     ctx.status = 200;
     await next();
   },
@@ -56,8 +49,9 @@ export const controllers = {
   updateFile : async (ctx : AppContext, next) => {
     let google = await (<User>ctx.user).getGoogleDrive();
     let fileId = ctx.params.id;
-    let data = filterObject<FileData>(ctx.request.body, ['name', 'parents']);
-    ctx.body = await google.files.update(fileId, data);
+    let encrypt = ctx.request.body.encrypt;
+    let data = filterObject<FileData>(ctx.request.body, FIELDS);
+    ctx.body = await google.update(fileId, data, encrypt);
     ctx.status = 200;
     await next();
   },
@@ -65,7 +59,7 @@ export const controllers = {
   uploadFile : async (ctx : AppContext, next) => {
     let google = await (<User>ctx.user).getGoogleDrive();
     let fileId = ctx.params.id;
-    ctx.body = await google.files.upload(fileId, ctx.req);
+    ctx.body = await google.upload(fileId, ctx.req);
     ctx.status = 200;
     await next();
   },
@@ -73,7 +67,7 @@ export const controllers = {
   removeFile : async (ctx : AppContext, next) => {
     let google = await (<User>ctx.user).getGoogleDrive();
     let fileId = ctx.params.id;
-    ctx.body = await google.files.remove(fileId);
+    ctx.body = await google.remove(fileId);
     ctx.status = 200;
     await next();
   },

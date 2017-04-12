@@ -10,11 +10,6 @@ export interface IUser extends mongooseDocument {
   jwtVersion : number;
   tokens : any;
 }
-async function v(a) {
-  console.dir(this, {depth : 5});
-  console.log(a);
-  return a;
-}
 
 let UserSchema = SchemaFactory.getNewSchema('User', {
   name : {type : String},

@@ -20,12 +20,16 @@ export class JWT {
   };
 
   static sign(body : JWTData) {
-    return jwt.sign(body, config.app.secret, {expiresIn : `${config.app.tokenTTL}s`});
+    return jwt.sign(body, config.app.secret, {expiresIn : `${config.app.token.ttl}s`});
   }
 
   static verify(token : string) : JWTData | null {
-    let data = jwt.verify(token, config.app.secret);
-    if (data) return this.deserializeData(data);
+    try {
+      let data = jwt.verify(token, config.app.secret);
+      if (data) return this.deserializeData(data);
+    } catch(err) {
+      throw new jwt.JsonWebTokenError("Bad authorization token");
+    }
     return null;
   }
 

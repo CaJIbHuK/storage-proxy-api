@@ -1,7 +1,7 @@
 import {AppContext} from "application";
 import {JWT} from "lib/jwt";
 import {AuthLib} from 'lib/auth';
-import {GoogleApiToken} from "lib/storage";
+import {GoogleApiToken, GoogleDriveAPI} from "lib/storage";
 import {userRepo, User, UserAuthInfo} from "handlers/users";
 
 let filterInputData = (data : any) : UserAuthInfo => {
@@ -48,7 +48,7 @@ export const controllers = {
 
     //TODO remove from here
     if (!user.googleTokens) {
-      let g = new GoogleAPI();
+      let g = new GoogleDriveAPI();
       g.requestAccess(ctx.user.id);
     }
 
@@ -60,7 +60,7 @@ export const controllers = {
     let userId = Number.parseInt(ctx.request.query.state);
     if (!userId) ctx.throw('Unknown google auth callback');
 
-    let google  = new GoogleAPI();
+    let google  = new GoogleDriveAPI();
     let googleTokens : GoogleApiToken = await google.getToken(ctx.request.query.code);
 
     let user = await userRepo.findById(userId);

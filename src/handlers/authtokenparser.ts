@@ -1,7 +1,7 @@
 import {AppContext} from "application";
+import config from "config";
 import {User, userRepo} from "handlers/users"
 import {JWT} from "lib/jwt";
-
 
 
 const tokenParserMiddleware = async (ctx : AppContext, next) => {
@@ -11,7 +11,7 @@ const tokenParserMiddleware = async (ctx : AppContext, next) => {
     let tokenData = JWT.verify(token);
     if (tokenData) {
       let user = await userRepo.findById(tokenData.id);
-      ctx.user = tokenData.vers === user.jwtVersion ? user : null;
+      ctx.user = (user.jwtVersion - tokenData.vers) <= config.app.token.maxCount ? user : null;
     }
   }
 

@@ -58,7 +58,6 @@ export class GoogleFileManager {
   async get(fileId : string) : Promise<APIFile> {
     let file = await this.googleDrive.files.get(fileId);
     if (!file) return null;
-    console.log(file);
     if (file.encrypted) file = await this.encdecMeta(file, EncryptorAction.decrypt);
     return file.toApiFile();
   }

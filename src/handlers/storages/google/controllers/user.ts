@@ -31,6 +31,8 @@ export const controllers = {
   downloadFile : async (ctx : AppContext, next) => {
     let google = await (<User>ctx.user).getGoogleDrive();
     let fileId = ctx.params.id;
+    let file = await google.get(fileId);
+    if (!file) ctx.throw(404, 'File not found');
     ctx.body = await google.download(fileId);
     ctx.status = 200;
     await next();
@@ -49,6 +51,8 @@ export const controllers = {
   updateFile : async (ctx : AppContext, next) => {
     let google = await (<User>ctx.user).getGoogleDrive();
     let fileId = ctx.params.id;
+    let file = await google.get(fileId);
+    if (!file) ctx.throw(404, 'File not found');
     let encrypt = ctx.request.body.encrypt;
     let data = filterObject<FileData>(ctx.request.body, FIELDS);
     ctx.body = await google.update(fileId, data, encrypt);
@@ -59,6 +63,8 @@ export const controllers = {
   uploadFile : async (ctx : AppContext, next) => {
     let google = await (<User>ctx.user).getGoogleDrive();
     let fileId = ctx.params.id;
+    let file = await google.get(fileId);
+    if (!file) ctx.throw(404, 'File not found');
     ctx.body = await google.upload(fileId, ctx.req);
     ctx.status = 200;
     await next();

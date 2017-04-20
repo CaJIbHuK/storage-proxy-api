@@ -37,6 +37,7 @@ export class User extends BaseModel<IUser> {
   set googleTokens(tokens : GoogleApiToken) {
     if (!this._doc.tokens) this._doc.tokens = {};
     this._doc.tokens.google = tokens;
+    this._doc.markModified('tokens');
   };
 
   async getGoogleDrive() : Promise<GoogleFileManager> {

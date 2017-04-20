@@ -49,7 +49,7 @@ export const controllers = {
     //TODO remove from here
     if (!user.googleTokens) {
       let g = new GoogleDriveAPI();
-      g.requestAccess(ctx.user.id);
+      g.requestAccess(user.id);
     }
 
     ctx.status = 200;
@@ -66,7 +66,7 @@ export const controllers = {
     let user = await userRepo.findById(userId);
     user.googleTokens = googleTokens;
     await user.save();
-
+    ctx.status = 200;
     await next();
   },
 

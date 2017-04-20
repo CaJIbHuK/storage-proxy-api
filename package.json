@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "main": "index.js",
   "dependencies": {
-    "amqp-as-promised": "^1.0.4",
     "app-module-path": "^1.1.0",
     "assert": "^1.3.0",
     "assert-plus": "^1.0.0",
@@ -28,10 +27,7 @@
     "koa-mount": "^2.0.0",
     "koa-rbac": "^1.0.5",
     "koa-router": "next",
-    "koa-static": "^3.0.0",
     "koa2-cors": "^2.0.3",
-    "lodash": "^4.17.0",
-    "lru-cache": "^4.0.1",
     "moment": "^2.10.6",
     "mongoose": "^4.9.1",
     "mongoose-auto-increment": "*",

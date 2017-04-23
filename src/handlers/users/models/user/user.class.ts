@@ -66,7 +66,10 @@ export class User extends BaseModel<IUser> {
     return {
       id : user.id,
       email : user.email,
-      name : user.name
+      name : user.name,
+      storages : {
+        google : !!user.googleTokens
+      }
     };
   }
 

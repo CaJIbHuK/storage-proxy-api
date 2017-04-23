@@ -1,5 +1,6 @@
 import {AppContext} from "application";
 import {User} from "handlers/users";
+import {GoogleDriveAPI} from "lib/storage";
 import {filterObject} from "lib/helpers";
 
 interface FileData {
@@ -10,6 +11,22 @@ interface FileData {
 const FIELDS = ['name', 'parents'];
 
 export const controllers = {
+
+  hasAccess : async (ctx : AppContext, next) => {
+    let googleTokens = await (<User>ctx.user).googleTokens;
+    if (!googleTokens) {
+      ctx.throw(403, "You must signin with google account");
+    }
+    await next();
+  },
+
+  getAccess : async (ctx : AppContext, next) => {
+    let user = await (<User>ctx.user);
+    let google = new GoogleDriveAPI();
+    ctx.body = {link : google.requestAccess(user.id)};
+    ctx.status = 200;
+    await next();
+  },
 
   getFiles : async (ctx : AppContext, next) => {
     let google = await (<User>ctx.user).getGoogleDrive();

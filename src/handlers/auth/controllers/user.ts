@@ -40,17 +40,11 @@ export const controllers = {
     if (!validationResult.result) ctx.throw(400, {message : validationResult.message});
 
     let user = await userRepo.findByEmail(authInfo.email);
-    if (!user) ctx.throw(400, 'Invalid `email`');
+    if (!user) ctx.throw(400, 'Invalid email or password');
     let validPassword = AuthLib.validatePassword(authInfo.password, user.salt, user.passwordHash);
-    if (!validPassword) ctx.throw(400, {message : 'Invalid `password`'});
+    if (!validPassword) ctx.throw(400, {message : 'Invalid email or password'});
 
     ctx.body = {token : await getToken(user)};
-
-    //TODO remove from here
-    if (!user.googleTokens) {
-      let g = new GoogleDriveAPI();
-      g.requestAccess(user.id);
-    }
 
     ctx.status = 200;
     await next();

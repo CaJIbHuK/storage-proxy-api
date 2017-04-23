@@ -1,16 +1,21 @@
 import * as Router from "koa-router";
 import {controllers} from "./controllers/user";
 
+const filesRouter = new Router();
+filesRouter
+  .get('/', controllers.getFiles)
+  .get('/:id', controllers.getFile)
+  .get('/:id/download', controllers.downloadFile)
+  .post('/', controllers.createFile)
+  .put('/:id', controllers.updateFile)
+  .put('/:id/upload', controllers.uploadFile)
+  .del('/:id', controllers.removeFile)
+;
 
 const router = new Router();
 router
-  .get('/files', controllers.getFiles)
-  .get('/files/:id', controllers.getFile)
-  .get('/files/:id/download', controllers.downloadFile)
-  .post('/files', controllers.createFile)
-  .put('/files/:id', controllers.updateFile)
-  .put('/files/:id/upload', controllers.uploadFile)
-  .del('/files/:id', controllers.removeFile)
+  .get('/access', controllers.getAccess)
+  .use('/files', controllers.hasAccess, filesRouter.routes(), filesRouter.allowedMethods())
 ;
 
 export {router};

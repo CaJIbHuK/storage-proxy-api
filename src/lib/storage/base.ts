@@ -32,7 +32,7 @@ export interface StorageAPI {
   files : StorageFileAPI;
 
   auth(credentials : StorageApiToken) : void;
-  requestAccess(userId : number) : void;
+  requestAccess(userId : number) : string; //retruns url
   getToken(authCode : string) : Promise<StorageApiToken>;
 
 }

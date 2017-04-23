@@ -53,14 +53,14 @@ export class GoogleDriveAPI implements StorageAPI {
     return promisifyErrRes<GoogleRefreshedApiToken>(this.client.refreshAccessToken.bind(this.client));
   }
 
-  requestAccess(userId : number) : void {
+  requestAccess(userId : number) : string {
     let authUrl = this.client.generateAuthUrl({
       access_type : "offline",
       scope : this.scopes,
       state : userId
     });
 
-    openurl.open(authUrl);
+    return authUrl;
   }
 
   getToken(authCode : string) : Promise<GoogleApiToken> {

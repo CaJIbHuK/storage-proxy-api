@@ -5,6 +5,7 @@ const filesRouter = new Router();
 filesRouter
   .get('/', controllers.getFiles)
   .get('/:id', controllers.getFile)
+  .get('/:id/info', controllers.getFileInfo)
   .get('/:id/download', controllers.downloadFile)
   .post('/', controllers.createFile)
   .put('/:id', controllers.updateFile)

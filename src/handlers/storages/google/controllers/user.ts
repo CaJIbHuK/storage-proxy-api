@@ -1,14 +1,16 @@
 import {AppContext} from "application";
 import {User} from "handlers/users";
-import {GoogleDriveAPI} from "lib/storage";
+import {GoogleDriveAPI, GoogleDriveFile} from "lib/storage";
 import {filterObject} from "lib/helpers";
 
 interface FileData {
   name? : string;
   parents? : string[];
+  folder? : boolean;
+  encrypted? : boolean;
 }
 
-const FIELDS = ['name', 'parents'];
+const FIELDS = ['name', 'parents', 'folder', 'encrypted'];
 
 export const controllers = {
 
@@ -45,6 +47,16 @@ export const controllers = {
     await next();
   },
 
+  getFileInfo : async (ctx : AppContext, next) => {
+    let google = await (<User>ctx.user).getGoogleDrive();
+    let fileId = ctx.params.id;
+    let file = await google.get(fileId);
+    if (!file) ctx.throw(404, 'File not found');
+    ctx.body = file;
+    ctx.status = 200;
+    await next();
+  },
+
   downloadFile : async (ctx : AppContext, next) => {
     let google = await (<User>ctx.user).getGoogleDrive();
     let fileId = ctx.params.id;
@@ -57,10 +69,9 @@ export const controllers = {
 
   createFile : async (ctx : AppContext, next) => {
     let google = await (<User>ctx.user).getGoogleDrive();
-    let encrypt = ctx.request.body.encrypt;
     let data = filterObject<FileData>(ctx.request.body, FIELDS);
     if (!data.name) ctx.throw(400, 'Invalid name');
-    ctx.body = await google.create(data, encrypt);
+    ctx.body = await google.create(data);
     ctx.status = 200;
     await next();
   },
@@ -70,9 +81,8 @@ export const controllers = {
     let fileId = ctx.params.id;
     let file = await google.get(fileId);
     if (!file) ctx.throw(404, 'File not found');
-    let encrypt = ctx.request.body.encrypt;
     let data = filterObject<FileData>(ctx.request.body, FIELDS);
-    ctx.body = await google.update(fileId, data, encrypt);
+    ctx.body = await google.update(fileId, data);
     ctx.status = 200;
     await next();
   },

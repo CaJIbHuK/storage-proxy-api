@@ -1,4 +1,5 @@
 import {promisifyErrRes} from "lib/promisify";
+import {filterObject} from "lib/helpers";
 import {StorageFile, StorageFileAPI, StorageFileList} from "lib/storage/base";
 import {APIFile} from "lib/storage/common/file";
 import {Readable} from "stream";
@@ -105,6 +106,8 @@ export class GoogleDriveFile implements StorageFile {
     this.size = data.size;
   }
 
+  get root() : boolean {return this.id === "name";};
+
   get encrypted() : boolean {return this.appProperties && this.appProperties.encrypted;}
 
   get folder() : boolean {return this.mimeType === GoogleDriveFile.MIME_TYPES.folder}
@@ -126,7 +129,10 @@ export class GoogleDriveFile implements StorageFile {
       size : this.size,
       folder : this.folder,
       storage : STORAGE_NAME,
-      parents : this.parents
+      parents : this.parents,
+      mimeType : this.googleApp ? this.exportMimeType : this.mimeType,
+      encrypted : this.encrypted,
+      root : this.root
     };
   }
 
@@ -210,6 +216,7 @@ export class GoogleDriveFileAPI implements StorageFileAPI {
   }
 
   create(data : IGoogleDriveFileMetaData = {}) : Promise<GoogleDriveFile> {
+    data = filterObject(data, GoogleDriveFile.FIELDS);
     if (!data.name) throw new GoogleValidationError("Property `name` is required.");
     let fileData = {resource : data};
     if (!fileData.resource.parents) fileData.resource.parents = [GoogleDriveFileAPI.ROOT_FOLDER_ID];
@@ -218,6 +225,7 @@ export class GoogleDriveFileAPI implements StorageFileAPI {
   }
 
   update(id : string, resourceData : IGoogleDriveFileMetaData = {}, mediaData : IGoogleDriveFileMediaData = {}) : Promise<GoogleDriveFile> {
+    resourceData = filterObject(resourceData, GoogleDriveFile.FIELDS);
     let dataToUpdate = {
       fileId : id,
       resource : resourceData,

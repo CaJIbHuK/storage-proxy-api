@@ -62,25 +62,26 @@ export class GoogleFileManager {
     return file.toApiFile();
   }
 
-  async create(data : IGoogleDriveFileMetaData, encrypt = false) : Promise<APIFile> {
-    if (encrypt) {
+  async create(data : {folder? : boolean, encrypted? : boolean} & IGoogleDriveFileMetaData) : Promise<APIFile> {
+    if (data.encrypted) {
       let fileId = await this.googleDrive.files.generateId();
       let fileEntry = await this.createFileEntry(fileId);
       data = await Encryptor.encdecFields<IGoogleDriveFileMetaData>(fileEntry.key, data, GoogleFileManager.FIELDS_TO_ENCRYPT, EncryptorAction.encrypt);
       data.id = fileId;
       data.appProperties = Object.assign({}, data.appProperties, {encrypted : true});
     }
+    if (data.folder) data.mimeType = GoogleDriveFile.MIME_TYPES.folder;
     let createdFile = await this.googleDrive.files.create(data);
     if (createdFile.encrypted) createdFile = await this.encdecMeta(createdFile, EncryptorAction.decrypt);
     return createdFile.toApiFile();
   }
 
-  async update(fileId : string, resourceData : IGoogleDriveFileMetaData = {}, encrypt = false) {
+  async update(fileId : string, resourceData : {encrypted? : boolean} & IGoogleDriveFileMetaData = {}) {
     let fileEntry = await this.fileRepo.findByFileId(fileId);
-    if (!fileEntry && encrypt) fileEntry = await this.createFileEntry(fileId);
+    if (!fileEntry && resourceData.encrypted) fileEntry = await this.createFileEntry(fileId);
     if (fileEntry) {
       let file = await this.googleDrive.files.get(fileId);
-      if (file.encrypted || encrypt) {
+      if (file.encrypted || resourceData.encrypted) {
         resourceData  = await Encryptor.encdecFields<IGoogleDriveFileMetaData>(fileEntry.key, resourceData, GoogleFileManager.FIELDS_TO_ENCRYPT, EncryptorAction.encrypt);
         resourceData.appProperties = Object.assign({}, resourceData.appProperties, {encrypted : true});
       }

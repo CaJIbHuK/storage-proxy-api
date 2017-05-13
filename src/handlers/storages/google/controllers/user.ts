@@ -1,6 +1,6 @@
 import {AppContext} from "application";
 import {User} from "handlers/users";
-import {GoogleDriveAPI, GoogleDriveFile} from "lib/storage";
+import {GoogleDriveAPI, GoogleDriveFile, IGoogleDriveFileMetaData} from "lib/storage";
 import {filterObject} from "lib/helpers";
 
 interface FileData {
@@ -62,6 +62,8 @@ export const controllers = {
     let fileId = ctx.params.id;
     let file = await google.get(fileId);
     if (!file) ctx.throw(404, 'File not found');
+    //TODO create folder downloading
+    if (file.folder) ctx.throw(400, 'Cannot download folder');
     ctx.body = await google.download(fileId);
     ctx.status = 200;
     await next();
@@ -81,7 +83,7 @@ export const controllers = {
     let fileId = ctx.params.id;
     let file = await google.get(fileId);
     if (!file) ctx.throw(404, 'File not found');
-    let data = filterObject<FileData>(ctx.request.body, FIELDS);
+    let data : IGoogleDriveFileMetaData = filterObject<FileData>(ctx.request.body, FIELDS);
     ctx.body = await google.update(fileId, data);
     ctx.status = 200;
     await next();
@@ -92,6 +94,7 @@ export const controllers = {
     let fileId = ctx.params.id;
     let file = await google.get(fileId);
     if (!file) ctx.throw(404, 'File not found');
+    if (file.folder) ctx.throw(400, 'Cannot upload data to folder');
     ctx.body = await google.upload(fileId, ctx.req);
     ctx.status = 200;
     await next();

@@ -1,6 +1,13 @@
 import {APIFile} from "./common/file";
 import {Readable} from "stream";
 
+export class StorageFileProperties {
+  encrypted : boolean;
+  constructor(data : any = {}) {
+    this.encrypted = data.encrypted === 'true';
+  }
+}
+
 export interface StorageFile {
   id : string;
   name : string;

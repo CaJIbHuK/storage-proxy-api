@@ -1,6 +1,6 @@
 import {promisifyErrRes} from "lib/promisify";
 import {filterObject} from "lib/helpers";
-import {StorageFile, StorageFileAPI, StorageFileList} from "lib/storage/base";
+import {StorageFile, StorageFileAPI, StorageFileList, StorageFileProperties} from "lib/storage/base";
 import {APIFile} from "lib/storage/common/file";
 import {Readable} from "stream";
 const STORAGE_NAME = 'google';
@@ -27,11 +27,13 @@ export interface IGoogleDriveFileMetaData {
   id? : string;
   name? : string;
   description? : string;
-  parents? : any;
+  parents? : string[];
   trashed? : boolean;
   mimeType? : string;
   properties? : any;
   appProperties? : any;
+  addParents? : string[];
+  removeParents? : string[];
 }
 
 export interface IGoogleDriveFileMediaData {
@@ -100,7 +102,7 @@ export class GoogleDriveFile implements StorageFile {
     this.parents = data.parents;
     this.trashed = data.trashed;
     this.properties = data.properties;
-    this.appProperties = data.appProperties;
+    this.appProperties = new StorageFileProperties(data.appProperties);
     this.createdTime = data.createdTime;
     this.modifiedTime = data.modifiedTime;
     this.size = data.size;
@@ -225,7 +227,8 @@ export class GoogleDriveFileAPI implements StorageFileAPI {
   }
 
   update(id : string, resourceData : IGoogleDriveFileMetaData = {}, mediaData : IGoogleDriveFileMediaData = {}) : Promise<GoogleDriveFile> {
-    resourceData = filterObject(resourceData, GoogleDriveFile.FIELDS);
+    resourceData = filterObject(resourceData, GoogleDriveFile.FIELDS.concat(['addParents', 'removeParents']));
+    delete resourceData.parents;
     let dataToUpdate = {
       fileId : id,
       resource : resourceData,

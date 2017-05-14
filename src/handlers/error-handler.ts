@@ -33,7 +33,7 @@ let init = async (ctx, next) => {
       ctx.status = 403;
     } else if (err instanceof GoogleRequestError) {
       ctx.body = {message : err.message};
-      ctx.status = err.status;
+      ctx.status = err.status || 500;
     } else if (err.statusCode && err.statusCode !== 500) {
       ctx.body = {message : err.message};
       ctx.status = err.statusCode;

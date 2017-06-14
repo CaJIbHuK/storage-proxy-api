@@ -9,8 +9,6 @@ const openurl = require('openurl');
 const OAuth2 = google.auth.OAuth2;
 
 const googleConfig = config.app.google;
-//TODO refactor
-const REDIRECT = "http://localhost:3000/api/v1/auth/google";
 
 export interface GoogleApiToken extends StorageApiToken {
   access_token : string;
@@ -38,7 +36,7 @@ export class GoogleDriveAPI implements StorageAPI {
     this.client = new OAuth2(
       googleConfig.id,
       googleConfig.secret,
-      REDIRECT
+      googleConfig.redirect
     );
     if (credentials) this.auth(credentials);
     this.service = google.drive({version : 'v3', auth : this.client});

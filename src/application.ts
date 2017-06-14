@@ -25,7 +25,11 @@ export default class Application extends Koa {
     this.handlers.push(handler);
     if (handler.init) {
       this.log.silly(`init -> ${handler.name}`);
-      await handler.init(this);
+      try {
+        await handler.init(this);
+      } catch(err) {
+        this.log.error(err.message || err);
+      }
       this.log.silly(`init <- ${handler.name}`);
     }
   }

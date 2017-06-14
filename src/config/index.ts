@@ -17,7 +17,8 @@ export default {
     },
     google : {
       id : env.GOOGLE_ID || "897872170485-mktar7o1p7inajbgruvlq6vbsdb187g6.apps.googleusercontent.com",
-      secret : env.GOOGLE_SECRET || "P_LaBqliIaRC1YQFSaYlzKlj"
+      secret : env.GOOGLE_SECRET || "P_LaBqliIaRC1YQFSaYlzKlj",
+      redirect : env.GOOGLE_REDIRECT || "http://localhost:3000/api/v1/auth/google"
     }
   },
   db : db,
